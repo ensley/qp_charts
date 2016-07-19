@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>QuickPredict</title>
+
+    <!-- Bootstrap -->
+    <!-- Latest compiled and minified CSS -->
+    <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous"> -->
+    <!-- Optional theme -->
+    <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous"> -->
+    <link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootswatch/3.3.6/simplex/bootstrap.min.css'>
+    <link rel="stylesheet" href="qp_multiple.css">
+  </head>
+
+  <body>
+
+    <div class="container">
+      <div class="page-header">
+        <h1>QuickPredict Charts</h1>
+				<button type="button" id="help" class="btn btn-info btn-xs" data-toggle="modal" data-target="infoModal">
+            <span class="glyphicon glyphicon-question-sign"></span>
+         </button>
+      </div>
+      <div class="row" style="margin-bottom:20px">
+        <div class="col-xs-2 dropdown">
+          <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">
+            Select a test
+            <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu">
+            <li><a href="#" data-ref="/qlife_mtm.json">MTM Traction</a></li>
+            <li><a href="#" data-ref="/qlife_ehd.json">EHD Film Thickness</a></li>
+          </ul>
+        </div>
+        <div class="col-xs-4">
+            <button type="button" id="export" class="btn btn-success">Export All</button>
+            <button type="button" id="swap" class="btn btn-success">Swap rows/columns</button>
+          <div class="btn-group" id="xbuttons" data-toggle="buttons"></div>
+
+        </div>
+        <div class="col-xs-6 text-right">
+          <!-- <h4>Adjust y axis range:</h4> -->
+          <form class="form-inline">
+            <div class="form-group">
+              <label for="ymin">Y min:</label>
+              <input type="number" step="any" class="form-control" id="ymin">
+            </div>
+            <div class="form-group">
+              <label for="ymax">Y max:</label>
+              <input type="number" step="any" class="form-control" id="ymax">
+            </div>
+            <button type="button" id="reset-range" class="btn btn-default">Reset</button>
+            <button type="button" id="change-range" class="btn btn-primary">Update</button>
+          </form>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-lg-1">
+          <div class="row">
+            <h3>Legend</h3>
+            <div class="media" id="legend"></div>
+          </div>
+        </div>
+        <div class="col-lg-11">
+          <table id="datatable" class="table table-bordered">
+            Pick a test from the dropdown.
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="infoModal" tabindex="-1" role="dialog" aria-labelledby="infoModal">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="infoModalLabel">Info</h4>
+            <div class="modal-body">
+							<p>This is a tool to compare predicted test results for multiple blends.</p>
+							<p>Each blend is given a color and displayed in the list on the left. Across the top are controls to fine tune the plots. For example, click "Plot srr" to draw the plots with srr on the x axis and the predicted traction result on the y axis. The other treatment settings, temp and load, are placed on the rows and columns of the plot grid.</p>
+							<p>Click "Swap rows/columns" to swap which variables are on the rows and which are on the columns. This is sometimes useful to better fit information on the screen.</p>
+							<p>Hover over a plot to see information about predicted values at a particular point for each blend. The blends are shown in decreasing order in this tooltip.</p>
+							<p>The range of the y axes can be adjusted. By default the upper and lower limits are set to the minimum and maximum predicted values. However, if one plot has an outlier that makes the other plots difficult to look at, adjust the range limits and click "Update" to change the view. "Reset" will reset the limits to their default values.</p>
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+    <script src="https://code.highcharts.com/highcharts.js" charset="utf-8"></script>
+    <script src="http://github.highcharts.com/modules/exporting.js"></script>
+    <script src="http://github.highcharts.com/modules/offline-exporting.js" charset="utf-8"></script>
+    <script src="qp_final.js" charset="utf-8"></script>
+  </body>
+</html>
