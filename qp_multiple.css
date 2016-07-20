@@ -1,24 +1,8 @@
-@media (min-width: 1800px) {
+/*@media (min-width: 1800px) {
   .container {
     width: 1800px;
   }
-}
-
-#datatable {
-  table-layout: fixed;
-  border: 5px;
-}
-#datatable td {
-  border: none;
-  padding: 15px;
-}
-#datatable th {
-  border: 1px #888;
-  /*border: none;*/
-  text-align: center;
-  vertical-align: middle;
-  font-size: 125%;
-}
+}*/
 
 .media-object {
   width: 32px;

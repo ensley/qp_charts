@@ -613,21 +613,27 @@ function createSingleRow(data, xvals, colvar, plotvar, selector) {
     console.log('colvar = ' + colvar);
     var chartArray = [],
         columns = xvals[colvar],
-        $headerTr = $('<tr/>'),
-        $row = $('<tr/>'),
+        $headerFlexbox = $('<div/>', {
+            class: '.flex-container',
+            style: 'display:flex; justify-content:space-between'
+        }),
+        $row = $('<div/>', {
+            class: '.flex-container',
+            style: 'display:flex; justify-content:space-between'
+        }),
         $selector = $(selector);
 
     columns.map(function(col) {
         var plotId = [colvar, col].join('');
-        $headerTr.append($('<th/>', {
-            style: 'text-align:center; vertical-align:middle'
+        $headerFlexbox.append($('<div/>', {
+            style: 'text-align:center; flex-basis:20%'
         }).html(colvar + ' : ' + col));
-        $row.append($('<td/>', {
+        $row.append($('<div/>', {
             id: 'plot-' + plotId
         }));
     });
 
-    $selector.append($headerTr);
+    $selector.append($headerFlexbox);
     $selector.append($row);
 
     columns.map(function(col) {
