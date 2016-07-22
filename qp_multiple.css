@@ -1,8 +1,8 @@
-/*@media (min-width: 1800px) {
+@media (min-width: 1800px) {
   .container {
-    width: 1800px;
+    width: 1760px;
   }
-}*/
+}
 
 .media-object {
   width: 32px;
@@ -15,4 +15,39 @@
 
 label.btn.active {
   z-index: -9999!important;
+}
+
+.flex-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+
+.flex-column {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: flex-end;
+}
+
+.chart-holder {
+    padding: 30px;
+    flex: 1 1 600px;
+}
+
+.chart-holder-column {
+    padding: 30px;
+    flex: 0 1 200px;
+}
+
+.row-header {
+    text-align: center;
+    flex: 1 1 200px;
+}
+
+.column-header {
+    flex: 1 1 200px;
+    align-self: flex-start;
+    display: flex;
+    align-items: center;
 }

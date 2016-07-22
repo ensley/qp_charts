@@ -477,6 +477,9 @@ function pushCellDataToChart(cellData, xvals, rowvar, row, colvar, col, plotvar)
             max: setMax,
             title: {
                 text: ''
+            },
+            labels: {
+                reserveSpace: true
             }
         },
         legend: {
@@ -614,22 +617,21 @@ function createSingleRow(data, xvals, colvar, plotvar, selector) {
     var chartArray = [],
         columns = xvals[colvar],
         $headerFlexbox = $('<div/>', {
-            class: '.flex-container',
-            style: 'display:flex; justify-content:space-between'
+            class: 'flex-row'
         }),
         $row = $('<div/>', {
-            class: '.flex-container',
-            style: 'display:flex; justify-content:space-between'
+            class: 'flex-row'
         }),
         $selector = $(selector);
 
     columns.map(function(col) {
         var plotId = [colvar, col].join('');
         $headerFlexbox.append($('<div/>', {
-            style: 'text-align:center; flex-basis:20%'
-        }).html(colvar + ' : ' + col));
+            class: 'row-header'
+        }).html('<h4>' + colvar + ' : ' + col + '</h4>'));
         $row.append($('<div/>', {
-            id: 'plot-' + plotId
+            id: 'plot-' + plotId,
+            class: 'chart-holder'
         }));
     });
 
@@ -651,18 +653,27 @@ function createSingleCol(data, xvals, rowvar, plotvar, selector) {
     console.log('rowvar = ' + rowvar);
     var chartArray = [],
         rows = xvals[rowvar],
+        $headerFlexbox = $('<div/>', {
+            class: 'flex-column col-sm-2'
+        }),
+        $col = $('<div/>', {
+            class: 'flex-column col-sm-5'
+        }),
         $selector = $(selector);
 
     rows.map(function(row) {
-        var $row = $('<tr/>'),
-            plotId = [rowvar, row].join('');
-        $row.append($('<th/>').html(rowvar + ' : ' + row));
-        $row.append($('<td/>', {
-            id: 'plot-' + plotId
+        var plotId = [rowvar, row].join('');
+        $headerFlexbox.append($('<div/>', {
+            class: 'column-header'
+        }).html('<h4>' + rowvar + ' : ' + row + '</h4>'));
+        $col.append($('<div/>', {
+            id: 'plot-' + plotId,
+            class: 'chart-holder-column'
         }));
-
-        $selector.append($row);
     });
+
+    $selector.append($headerFlexbox);
+    $selector.append($col);
 
     rows.map(function(row) {
         var cellData = pullCellData(data, rowvar, row, '', '');
@@ -680,26 +691,31 @@ function createFullTable(data, xvals, rowvar, colvar, plotvar, selector) {
     var chartArray = [],
         columns = xvals[colvar],
         rows = xvals[rowvar],
-        $headerTr = $('<tr/>'),
+        $headerFlexbox = $('<div/>', {
+            class: 'flex-row'
+        }),
         $selector = $(selector);
 
-    $headerTr.append($('<th/>'));
-
     columns.map(function(col) {
-        $headerTr.append($('<th/>', {
-            style: 'text-align:center; vertical-align:middle'
-        }).html(colvar + ' : ' + col));
+        $headerFlexbox.append($('<div/>', {
+            class: 'row-header'
+        }).html('<h4>' + colvar + ' : ' + col + '</h4>'));
     });
 
-    $selector.append($headerTr);
+    $selector.append($headerFlexbox);
 
     rows.map(function(row) {
-        var $row = $('<tr/>');
-        $row.append($('<th/>').html(rowvar + ' : ' + row));
+        var $row = $('<div/>', {
+            class: 'flex-row'
+        });
+        $row.append($('<div/>', {
+            // class: 'column-header'
+        }).html('<h4>' + rowvar + ' : ' + row + '</h4>'));
         columns.map(function(col) {
             var plotId = [rowvar, row, colvar, col].join('');
-            $row.append($('<td/>', {
-                id: 'plot-' + plotId
+            $row.append($('<div/>', {
+                id: 'plot-' + plotId,
+                class: 'chart-holder'
             }));
         });
         $selector.append($row);
