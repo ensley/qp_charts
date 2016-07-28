@@ -1,8 +1,8 @@
-@media (min-width: 1800px) {
+/*@media (min-width: 1800px) {
   .container {
     width: 1760px;
   }
-}
+}*/
 
 .media-object {
   width: 32px;
@@ -21,10 +21,11 @@ label.btn.active {
     display: flex;
     flex-direction: row;
     justify-content: space-around;
+    align-items: center;
 }
 
 .flex-column {
-    display: flex;
+    display: inline-flex;
     flex-direction: column;
     justify-content: space-around;
     align-items: flex-end;
@@ -40,14 +41,15 @@ label.btn.active {
     flex: 0 1 200px;
 }
 
-.row-header {
+.column-header {
     text-align: center;
     flex: 1 1 200px;
 }
 
-.column-header {
+.row-header {
     flex: 1 1 200px;
     align-self: flex-start;
     display: flex;
     align-items: center;
+
 }

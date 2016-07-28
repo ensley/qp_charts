@@ -93,13 +93,7 @@ $(function() {
                 selector);
 
             // set/update behavior of the buttons
-            initializeButtons(data, xvals, gridObj, xNames[0],
-                selector);
-
-            // export the charts on click
-            $('#export').click(function() {
-                Highcharts.exportCharts(chartArray);
-            });
+            // initializeButtons(data, xvals, gridObj, xNames[0], selector, chartArray);
 
 
 
@@ -115,7 +109,7 @@ $(function() {
      * @param  {string} selector the ID of the table
      * @return {null}
      */
-    function initializeButtons(data, xvals, gridvars, plotvar, selector) {
+    function initializeButtons(data, xvals, gridvars, plotvar, selector, chartArray) {
         var allXs = [plotvar, gridvars.row, gridvars.col];
 
         //
@@ -148,7 +142,7 @@ $(function() {
                 col: rowvar
             };
             console.log('CALLING createHtmlTable.');
-            chartArray = createHtmlTable(data,
+            createHtmlTable(data,
                 xvals,
                 gridObj, plotvar,
                 selector);
@@ -179,8 +173,20 @@ $(function() {
             $('#change-range').click();
         });
 
-        //  Redraw the charts with the min and max values given in the form
-
+        $('#export').unbind();
+        // export the charts on click
+        $('#export').click(function() {
+            var $table = $(selector);
+            var rowvar = $table.data('row');
+            var colvar = $table.data('col');
+            var chartArray = [];
+            chartArray.numRows = xvals[rowvar] === undefined ? 1 : xvals[rowvar].length;
+            chartArray.numCols = xvals[colvar] === undefined ? 1 : xvals[colvar].length;
+            $('.chart-holder, .chart-holder-column').each(function() {
+                chartArray.push($(this).highcharts());
+            });
+            Highcharts.exportCharts(chartArray);
+        });
 
     }
 
@@ -267,7 +273,7 @@ $(function() {
         });
 
         // set the button behavior
-        initializeButtons(data, xvals, gridvars, plotvar, selector);
+        initializeButtons(data, xvals, gridvars, plotvar, selector, chartArray);
 
         return chartArray;
     }
@@ -299,9 +305,11 @@ function dynamicSort(property) {
 
 /**
  * Create a global getSVG method that takes an array of charts as an argument. The SVG is returned as an argument in the callback.
- * TODO: this doesn't work right
  */
 Highcharts.getSVG = function(charts, numRows, numCols, options, callback) {
+    console.log(charts);
+    console.log(numRows + ' x ' + numCols);
+
     var svgArr = [],
         top = 20,
         width = 20,
@@ -314,7 +322,7 @@ Highcharts.getSVG = function(charts, numRows, numCols, options, callback) {
             svg = svg.replace('</svg>', '</g>');
             if (col === numCols - 1) {
                 // we are at the end of the row. drop down to the beginning of the next row
-                top += 200;
+                top += 400;
                 if (svgArr.length !== charts.length - 1) {
                     width = 0;
                 } else {
@@ -348,7 +356,6 @@ Highcharts.getSVG = function(charts, numRows, numCols, options, callback) {
 Highcharts.exportCharts = function(charts, options) {
     // Merge the options
     options = Highcharts.merge(Highcharts.getOptions().exporting, options);
-    console.log(options.xAxis);
     var imageType = options && options.type || 'image/png';
 
     // Get SVG asynchronously and then download the resulting SVG
@@ -430,6 +437,14 @@ function pushCellDataToChart(cellData, xvals, rowvar, row, colvar, col, plotvar)
     var plotId = 'plot-' + [rowvar, row, colvar, col].join('');
     var setMin = $('#ymin').val();
     var setMax = $('#ymax').val();
+    var titleText = '';
+    if (rowvar === '') {
+        titleText = colvar + ' = ' + col;
+    } else if (colvar === '') {
+        titleText = rowvar + ' = ' + row;
+    } else {
+        titleText = rowvar + ' = ' + row + ', ' + colvar + ' = ' + col;
+    }
 
     //  Options for the chart. Mostly deals with hiding axis labels and text so that it fits better inside a table.
     var options = {
@@ -439,7 +454,7 @@ function pushCellDataToChart(cellData, xvals, rowvar, row, colvar, col, plotvar)
                     margin: undefined
                 },
                 title: {
-                    text: rowvar + ' = ' + row + ', ' + colvar + ' = ' + col
+                    text: titleText
                 },
                 xAxis: {
                     title: {
@@ -480,7 +495,8 @@ function pushCellDataToChart(cellData, xvals, rowvar, row, colvar, col, plotvar)
             },
             labels: {
                 reserveSpace: true
-            }
+            },
+            opposite: true
         },
         legend: {
             enabled: false
@@ -627,7 +643,7 @@ function createSingleRow(data, xvals, colvar, plotvar, selector) {
     columns.map(function(col) {
         var plotId = [colvar, col].join('');
         $headerFlexbox.append($('<div/>', {
-            class: 'row-header'
+            class: 'column-header'
         }).html('<h4>' + colvar + ' : ' + col + '</h4>'));
         $row.append($('<div/>', {
             id: 'plot-' + plotId,
@@ -645,6 +661,9 @@ function createSingleRow(data, xvals, colvar, plotvar, selector) {
         chartArray.push(c);
     });
 
+    chartArray.numRows = 1;
+    chartArray.numCols = columns.length;
+
     return chartArray;
 }
 
@@ -654,10 +673,10 @@ function createSingleCol(data, xvals, rowvar, plotvar, selector) {
     var chartArray = [],
         rows = xvals[rowvar],
         $headerFlexbox = $('<div/>', {
-            class: 'flex-column col-sm-2'
+            class: 'flex-column'
         }),
         $col = $('<div/>', {
-            class: 'flex-column col-sm-5'
+            class: 'flex-column'
         }),
         $selector = $(selector);
 
@@ -682,6 +701,9 @@ function createSingleCol(data, xvals, rowvar, plotvar, selector) {
         chartArray.push(c);
     });
 
+    chartArray.numRows = rows.length;
+    chartArray.numCols = 1;
+
     return chartArray;
 }
 
@@ -696,9 +718,13 @@ function createFullTable(data, xvals, rowvar, colvar, plotvar, selector) {
         }),
         $selector = $(selector);
 
+    $headerFlexbox.append($('<div/>', {
+        class: 'row-header column-header'
+    }));
+
     columns.map(function(col) {
         $headerFlexbox.append($('<div/>', {
-            class: 'row-header'
+            class: 'column-header'
         }).html('<h4>' + colvar + ' : ' + col + '</h4>'));
     });
 
@@ -709,7 +735,7 @@ function createFullTable(data, xvals, rowvar, colvar, plotvar, selector) {
             class: 'flex-row'
         });
         $row.append($('<div/>', {
-            // class: 'column-header'
+            class: 'row-header'
         }).html('<h4>' + rowvar + ' : ' + row + '</h4>'));
         columns.map(function(col) {
             var plotId = [rowvar, row, colvar, col].join('');
@@ -730,6 +756,9 @@ function createFullTable(data, xvals, rowvar, colvar, plotvar, selector) {
             chartArray.push(c);
         });
     });
+
+    chartArray.numRows = rows.length;
+    chartArray.numCols = columns.length;
 
     return chartArray;
 }
