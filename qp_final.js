@@ -104,7 +104,7 @@ $( function () {
      * @param  {string} selector the ID of the table
      * @return {null}
      */
-    function initializeButtons( data, xvals, gridvars, plotvar, selector, chartArray ) {
+    function initializeButtons( data, xvals, gridvars, plotvar, selector ) {
         var allXs = [ plotvar, gridvars.row, gridvars.col ];
 
         $( 'label[id^="label-"]' )
@@ -271,7 +271,7 @@ $( function () {
         } );
 
         // set the button behavior
-        initializeButtons( data, xvals, gridvars, plotvar, selector, chartArray );
+        initializeButtons( data, xvals, gridvars, plotvar, selector );
 
         return chartArray;
     }
