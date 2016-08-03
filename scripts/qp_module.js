@@ -243,12 +243,12 @@ var app = (function() {
         var $headerFlexbox = $( '<div/>', { class: 'flex-row' } );
 
         $headerFlexbox.append( $( '<div/>', {
-            class: 'column-header row-header'
+            class: 'chart-holder row-header'
         } ) );
 
         columns.map( function( col ) {
             $headerFlexbox.append( $( '<div/>', {
-                class: 'column-header'
+                class: 'chart-holder'
             } ).html( '<h4>' + gridObj.col + ' : ' + col + '</h4>' ) );
         } );
 
@@ -324,7 +324,7 @@ var app = (function() {
         rows.map( function( row ) {
             var plotId = [ gridObj.row, row ].join( '' );
             $headerFlexbox.append( $( '<div/>', {
-                class: 'column-header'
+                class: 'row-header'
             } ).html( '<h4>' + gridObj.row + ' : ' + row + '</h4>' ) );
             $col.append( $( '<div/>', {
                 id: 'plot-' + plotId,
