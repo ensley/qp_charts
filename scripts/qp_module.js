@@ -16,7 +16,12 @@ var app = (function() {
     var otherXs = [];
     var chartArray = [];
 
-    var init = function() {
+    var init = function( options ) {
+
+        if( options && typeof( options ) === 'object' ) {
+            $.extend( config, options );
+        }
+
         setupHelpButton();
         setupDropdown();
         setupRange();
@@ -36,7 +41,7 @@ var app = (function() {
             $clicked.html( $this.text() + ' <span class="caret"></span>' );
             $clicked.val( $this.data( 'value' ) );
             config.filepath = $this.attr( 'data-ref' );
-            console.log( config );
+            // console.log( config );
             loadData();
         });
     };
@@ -44,8 +49,8 @@ var app = (function() {
     var setupRange = function() {
         $( '#change-range' ).unbind();
         $( '#change-range' ).click( function() {
-            console.log( 'CHANGE RANGE BUTTON CLICKED.' );
-            console.log( 'CALLING createHtmlTable FROM CHANGE RANGE BUTTON.' );
+            // console.log( 'CHANGE RANGE BUTTON CLICKED.' );
+            // console.log( 'CALLING createHtmlTable FROM CHANGE RANGE BUTTON.' );
             chartArray = createHtmlTable( config.$container.data() );
         });
 
@@ -139,13 +144,13 @@ var app = (function() {
 
     var loadData = function() {
         $( '.hide-at-start' ).css( 'display', '' );
-        console.log( 'LOAD DATA CALLED. FILEPATH: ' + config.filepath );
+        // console.log( 'LOAD DATA CALLED. FILEPATH: ' + config.filepath );
         $.ajax( {
             url: config.filepath,
             dataType: 'json',
             async: true
         } ).done( function( data ) {
-            console.log( 'DATA LOADED.' );
+            // console.log( 'DATA LOADED.' );
             allData = data;
 
             originalRange = findYrange( data, config.yvar );
@@ -154,7 +159,7 @@ var app = (function() {
 
             xvals = createXvals( data );
 
-            console.log( 'XVALS CREATED.' );
+            // console.log( 'XVALS CREATED.' );
 
             xNames = $.grep( Object.keys( xvals ), function( value ) {
                 return config.nonplots.indexOf( value ) === -1;
@@ -175,7 +180,7 @@ var app = (function() {
     };
 
     var createHtmlTable = function( gridObj ) {
-        console.log( 'createHtmlTable CALLED.' );
+        // console.log( 'createHtmlTable CALLED.' );
 
         config.$container.html( '' );
         config.$buttons.html( '' );
@@ -197,12 +202,12 @@ var app = (function() {
     };
 
     var initializeButtons = function( gridObj ) {
-        console.log( 'initializeButtons CALLED.' );
+        // console.log( 'initializeButtons CALLED.' );
         var allXs = $.map( gridObj, function( value ) {
             return value;
         });
 
-        console.log( 'INITIALIZING X BUTTONS.' );
+        // console.log( 'INITIALIZING X BUTTONS.' );
         $( 'label[id^="label-"]' ).on( 'click', function() {
             var $button = $( this )[0].firstChild;
             var newPlotvar = $button.dataset.xname;
@@ -214,25 +219,25 @@ var app = (function() {
                 'col': newOtherXs[1],
                 'plot': newPlotvar
             };
-            console.log( 'CALLING createHtmlTable FROM X BUTTON.' );
+            // console.log( 'CALLING createHtmlTable FROM X BUTTON.' );
             chartArray = createHtmlTable( newGridObj );
         });
-        console.log( 'X BUTTONS INITIALIZED.' );
+        // console.log( 'X BUTTONS INITIALIZED.' );
 
-        console.log( 'INITIALIZING SWAP BUTTON.' );
+        // console.log( 'INITIALIZING SWAP BUTTON.' );
         $( '#swap' ).unbind();
         $( '#swap' ).click( function() {
-            console.log( 'SWAP BUTTON CLICKED' );
+            // console.log( 'SWAP BUTTON CLICKED' );
             var newGridObj = {
                 'row': config.$container.data( 'col' ),
                 'col': config.$container.data( 'row' ),
                 'plot': config.$container.data( 'plot' )
             };
-            console.log( 'CALLING createHtmlTable FROM SWAP BUTTON.' );
+            // console.log( 'CALLING createHtmlTable FROM SWAP BUTTON.' );
             chartArray = createHtmlTable( newGridObj );
             return false;
         });
-        console.log( 'SWAP BUTTON INITIALIZED' );
+        // console.log( 'SWAP BUTTON INITIALIZED' );
 
     };
 
