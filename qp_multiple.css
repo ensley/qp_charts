@@ -53,3 +53,13 @@ label.btn.active {
     align-items: center;
 
 }
+
+.btn-toolbar {
+    margin-bottom: 5px;
+}
+
+.controls {
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}

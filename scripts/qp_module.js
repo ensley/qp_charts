@@ -56,6 +56,8 @@ var app = (function() {
             $( '#change-range' ).click();
         });
 
+        $( '.hide-at-start' ).css( 'display', 'none' );
+
     };
 
     var setupExport = function() {
@@ -136,6 +138,7 @@ var app = (function() {
     }
 
     var loadData = function() {
+        $( '.hide-at-start' ).css( 'display', '' );
         console.log( 'LOAD DATA CALLED. FILEPATH: ' + config.filepath );
         $.ajax( {
             url: config.filepath,
