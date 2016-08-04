@@ -1,70 +1,85 @@
-var app = (function() {
+var qp = ( function() {
 
+    // default options
     var config = {
         '$container' : $('#datatable'),
         '$buttons' : $('#xbuttons'),
         'filepath' : '/data/qlife_mtm.json',
         'yvar' : 'pred',
         'seriesvar' : 'blendid',
-        'nonplots' : [ 'blendid', 'corpid', 'datetime' ]
+        'nonplots' : [ 'corpid', 'datetime' ]
     };
 
-    var allData = [];
-    var originalRange = [];
-    var xvals = {};
-    var xNames = [];
-    var otherXs = [];
-    var chartArray = [];
+    // "global" vars
+    var allData = [];           // the raw JSON
+    var originalRange = [];     // the range of the y-axis data. allows easy resetting
+    var xvals = {};             // see "createXvals"
+    var xNames = [];            // the x variables
+    var otherXs = [];           // the x variables that are not being plotted at the moment (they go on the rows and/or columns of the grid)
+    var chartArray = [];        // all the Highcharts objects currently on the screen. also has numRows and numCols properties
 
+    // set everything up
     var init = function( options ) {
 
+        // include user specified options
         if( options && typeof( options ) === 'object' ) {
             $.extend( config, options );
         }
+
+        // hide all the controls until we've picked a data source from the dropdown
+        $( '.hide-at-start' ).css( 'display', 'none' );
 
         setupHelpButton();
         setupDropdown();
         setupRange();
         setupExport();
+
     };
 
+    // bind the modal (from bootstrap.js) to its button
     var setupHelpButton = function() {
+
         $( '#help' ).click( function() {
             $( '#infoModal' ).modal();
         });
+
     };
 
+    // set dropdown menu behavior
     var setupDropdown = function() {
+
         $( '.dropdown-menu li a' ).click( function() {
             var $this = $( this );
             var $clicked = $this.parents( '.dropdown' ).find( '.btn' );
             $clicked.html( $this.text() + ' <span class="caret"></span>' );
             $clicked.val( $this.data( 'value' ) );
             config.filepath = $this.attr( 'data-ref' );
-            // console.log( config );
+            // load the data on click
             loadData();
         });
+
     };
 
+    // set behavior of the "y axis" form
     var setupRange = function() {
+
         $( '#change-range' ).unbind();
+        // when "Update" is clicked, redraw the charts
         $( '#change-range' ).click( function() {
-            // console.log( 'CHANGE RANGE BUTTON CLICKED.' );
-            // console.log( 'CALLING createHtmlTable FROM CHANGE RANGE BUTTON.' );
             chartArray = createHtmlTable( config.$container.data() );
         });
 
         $( '#reset-range' ).unbind();
+        // when "Reset" is clicked, revert to the original range and redraw
         $( '#reset-range' ).click( function() {
             $( '#ymin' ).val( originalRange[0] );
             $( '#ymax' ).val( originalRange[1] );
-            $( '#change-range' ).click();
+            chartArray = createHtmlTable( config.$container.data() );
         });
-
-        $( '.hide-at-start' ).css( 'display', 'none' );
 
     };
 
+    // set export button behavior
     var setupExport = function() {
         $( '#export' ).unbind();
         $( '#export' ).click( function() {
@@ -72,121 +87,59 @@ var app = (function() {
         });
     };
 
-    var findYrange = function( data, yvar ) {
-        var min = Infinity;
-        var max = -Infinity;
-        $.each( data, function( index, obj ) {
-            value = obj[ yvar ];
-            if( value < min ) {
-                min = value;
-            } else if( value > max ) {
-                max = value;
-            }
-        } );
-        return [ min, max ];
-    };
-
-    var createXvals = function( data ) {
-        var xvals = {};
-        $.each( data, function( index, item ) {
-            $.each( Object.keys( item ), function( i, key ) {
-                if( key === config.yvar ) return;
-                if( Object.keys( xvals ).indexOf( key ) < 0 ) {
-                    xvals[key] = [];
-                }
-                if( xvals[key].indexOf( item[key] ) < 0) {
-                    xvals[key].push( item[key] );
-                }
-            });
-        });
-        return xvals;
-    };
-
-    var createXbuttons = function( gridObj ) {
-        var allXs = $.map( gridObj, function( value ) {
-            return value;
-        }).sort();
-
-        $.each( allXs, function( index, xname ) {
-            var isActive = '';
-            if( xname === gridObj.plot ) {
-                isActive = ' active';
-            }
-
-            if( xname !== undefined ) {
-                config.$buttons.append(
-                    $( '<label/>', {
-                        class: 'btn btn-primary' + isActive,
-                        id: 'label-' + xname
-                    } ).append(
-                        $( '<input/>', {
-                            type: 'radio',
-                            id: 'btn-' + xname,
-                            'data-xname': xname
-                        } )
-                    ).append( 'Plot ' + xname )
-                );
-            }
-        });
-    };
-
-    function dynamicSort( property ) {
-        var sortOrder = 1;
-        if ( property[ 0 ] === "-" ) {
-            sortOrder = -1;
-            property = property.substr( 1 );
-        }
-        return function ( a, b ) {
-            var result = ( a[ property ] < b[ property ] ) ? -1 : ( a[ property ] > b[ property ] ) ? 1 : 0;
-            return result * sortOrder;
-        };
-    }
-
+    // load the data
     var loadData = function() {
+        // now we can show the controls
         $( '.hide-at-start' ).css( 'display', '' );
-        // console.log( 'LOAD DATA CALLED. FILEPATH: ' + config.filepath );
+
+        // AJAX call to the server, at the url given in the initial options
         $.ajax( {
             url: config.filepath,
             dataType: 'json',
             async: true
         } ).done( function( data ) {
-            // console.log( 'DATA LOADED.' );
+            // set those globals
             allData = data;
-
             originalRange = findYrange( data, config.yvar );
-            $( '#ymin' ).val( originalRange[0] );
-            $( '#ymax' ).val( originalRange[1] );
-
             xvals = createXvals( data );
-
-            // console.log( 'XVALS CREATED.' );
-
             xNames = $.grep( Object.keys( xvals ), function( value ) {
-                return config.nonplots.indexOf( value ) === -1;
+                return config.nonplots.concat( config.seriesvar ).indexOf( value ) === -1;
             });
-
             otherXs = $.grep( xNames, function( name ) {
                 return xNames[0] !== name;
             });
 
+            // put the range into the form initially
+            $( '#ymin' ).val( originalRange[0] );
+            $( '#ymax' ).val( originalRange[1] );
+
+            // this object gets passed around a lot.
+            // indicates which x gets plotted and which goes on the rows/cols
             var gridObj = {
                 'row': otherXs[1],
                 'col': otherXs[0],
                 'plot': xNames[0]
             };
 
+            // draw the charts
             chartArray = createHtmlTable( gridObj );
         });
     };
 
+    // draws the charts and puts them in the DOM. returns an array of the charts.
+    // we have a few cases to handle: having an x on a row, having an x on a column,
+    // and having x's on both. it changes how we insert everything in the DOM.
+    // these cases are handled in helper functions.
     var createHtmlTable = function( gridObj ) {
-        // console.log( 'createHtmlTable CALLED.' );
 
+        // clear the containers for the charts and for the x buttons
         config.$container.html( '' );
         config.$buttons.html( '' );
 
+        // bind the grid object to the container
         config.$container.data( gridObj );
 
+        // delegate the chart creation to helpers
         if( gridObj.row === undefined ) {
             chartArray = createSingleRow( gridObj );
         } else if( gridObj.col === undefined ) {
@@ -195,19 +148,21 @@ var app = (function() {
             chartArray = createFullTable( gridObj );
         }
 
+        // create and set up the x buttons
         createXbuttons( gridObj );
         initializeButtons( gridObj );
 
         return chartArray;
     };
 
+    // set up the x buttons and the swap button
     var initializeButtons = function( gridObj ) {
-        // console.log( 'initializeButtons CALLED.' );
+
         var allXs = $.map( gridObj, function( value ) {
             return value;
         });
 
-        // console.log( 'INITIALIZING X BUTTONS.' );
+        // set up the x buttons
         $( 'label[id^="label-"]' ).on( 'click', function() {
             var $button = $( this )[0].firstChild;
             var newPlotvar = $button.dataset.xname;
@@ -219,34 +174,37 @@ var app = (function() {
                 'col': newOtherXs[1],
                 'plot': newPlotvar
             };
-            // console.log( 'CALLING createHtmlTable FROM X BUTTON.' );
+            // redraw the charts
             chartArray = createHtmlTable( newGridObj );
         });
-        // console.log( 'X BUTTONS INITIALIZED.' );
 
-        // console.log( 'INITIALIZING SWAP BUTTON.' );
+        // set up the swap button
         $( '#swap' ).unbind();
         $( '#swap' ).click( function() {
-            // console.log( 'SWAP BUTTON CLICKED' );
             var newGridObj = {
                 'row': config.$container.data( 'col' ),
                 'col': config.$container.data( 'row' ),
                 'plot': config.$container.data( 'plot' )
             };
-            // console.log( 'CALLING createHtmlTable FROM SWAP BUTTON.' );
+            // redraw the charts
             chartArray = createHtmlTable( newGridObj );
+            // make sure no weird default behavior happens (maybe unnecessary?)
             return false;
         });
-        // console.log( 'SWAP BUTTON INITIALIZED' );
 
     };
 
+    // case where we have 2 non-plotted x's, one for the rows and one for the columns
     var createFullTable = function( gridObj ) {
+        // reset chartArray global
         chartArray = [];
+        // get all values of the two x's from xvals
         var columns = xvals[ gridObj.col ];
         var rows = xvals[ gridObj.row ];
+        // that's right, we're going flexbox
         var $headerFlexbox = $( '<div/>', { class: 'flex-row' } );
 
+        // jQuery DOM stuff, whatever
         $headerFlexbox.append( $( '<div/>', {
             class: 'chart-holder row-header'
         } ) );
@@ -276,25 +234,34 @@ var app = (function() {
             config.$container.append( $row );
         } );
 
+        // put the charts in all those divs
         rows.map( function( row ) {
             columns.map( function( col ) {
                 var chart = drawChart( gridObj, row, col );
+                // don't forget to add the chart to the array
                 chartArray.push( chart );
             } );
         } );
 
+        // make sure chartArray knows how many rows and cols there were.
+        // this is so that the export all function can position everything
+        // just as it was on the screen.
         chartArray.numRows = rows.length;
         chartArray.numCols = columns.length;
 
         return chartArray;
     };
 
+    // case where we have 1 non-plotted x and it's going along the "columns"
+    // (therefore creating one row of charts)
     var createSingleRow = function( gridObj ) {
+        // reset chartArray global
         chartArray = [];
         var columns = xvals[ gridObj.col ];
+
+        // jQuery DOM stuff
         $headerFlexbox = $( '<div/>', { class: 'flex-row' } );
         $row = $( '<div/>', { class: 'flex-row' } );
-
         columns.map( function( col ) {
             var plotId = [ gridObj.col, col ].join( '' );
             $headerFlexbox.append( $( '<div/>', {
@@ -309,23 +276,29 @@ var app = (function() {
         config.$container.append( $headerFlexbox );
         config.$container.append( $row );
 
+        // put the charts in the divs and push them to the array
         columns.map( function( col ) {
             var chart = drawChart( gridObj, undefined, col );
             chartArray.push( chart );
         } );
 
+        // update rows and cols count
         chartArray.numRows = 1;
         chartArray.numCols = columns.length;
 
         return chartArray;
     };
 
+    // case where we have 1 non-plotted x and it's going along the "rows"
+    // (therefore creating one column of charts)
     var createSingleCol = function( gridObj ) {
+        // reset chartArray global
         chartArray = [];
         var rows = xvals[ gridObj.row ];
+
+        // jQuery DOM stuff
         var $headerFlexbox = $( '<div/>', { class: 'flex-column' } );
         var $col = $( '<div/>', { class: 'flex-column' } );
-
         rows.map( function( row ) {
             var plotId = [ gridObj.row, row ].join( '' );
             $headerFlexbox.append( $( '<div/>', {
@@ -340,23 +313,30 @@ var app = (function() {
         config.$container.append( $headerFlexbox );
         config.$container.append( $col );
 
+        // put the charts in the divs and push them to the array
         rows.map( function( row ) {
             var chart = drawChart( gridObj, row, undefined );
             chartArray.push( chart );
         } );
 
+        // update rows and cols count
         chartArray.numRows = rows.length;
         chartArray.numCols = 1;
 
         return chartArray;
     };
 
+    // finally, the function that actually draws the charts
     var drawChart = function( gridObj, row, col ) {
+        // get all the data points that should go into this chart
         var cellData = pullCellData( gridObj, row, col );
+        // build up the correct ID so Highcharts knows where to draw
         var plotId = 'plot-' + [ gridObj.row, row, gridObj.col, col ].join( '' );
+        // get the y axis range from the form
         var setMin = $( '#ymin' ).val();
         var setMax = $( '#ymax' ).val();
 
+        // this text goes in the title of the exported charts only
         var titleText = '';
         if( gridObj.row === undefined ) {
             titleText = gridObj.col + ' = ' + col;
@@ -366,8 +346,9 @@ var app = (function() {
             titleText = gridObj.row + ' = ' + row + ', ' + gridObj.col + ' = ' + col;
         }
 
-        //  Options for the chart. Mostly deals with hiding axis labels and text so that it fits better inside a table.
+        //  Options for the chart. Mostly deals with hiding defaults so that everything fits nicer when small.
         var options = {
+            // these options only affect the exported chart
             exporting: {
                 chartOptions: {
                     chart: {
@@ -473,6 +454,7 @@ var app = (function() {
             series: []
         };
 
+        // create one series for each distinct value of seriesvar
         xvals[ config.seriesvar ].map( function( form ) {
             options.series.push( {
                 name: form,
@@ -480,6 +462,7 @@ var app = (function() {
             } );
         } );
 
+        // add the data points
         $.each( cellData, function( index, obj ) {
             var point = {
                 x: obj[ gridObj.plot ],
@@ -493,8 +476,11 @@ var app = (function() {
             } );
         } );
 
+        // draw the chart
         var c = new Highcharts.chart( options, function() {
+            // on callback, add the seriesvar's to the legend if they aren't there already
             var $legend = $( '#legend' );
+            // each chart should have the exact same legend. so if there's something there, we can move on
             if( $legend.html() !== '' ) return;
 
             $.each( this.series, function( index, series ) {
@@ -523,6 +509,7 @@ var app = (function() {
 
     };
 
+    // finds all the data points that belong in a particular chart
     var pullCellData = function( gridObj, row, col ) {
         var result = [];
         $.each( allData, function( index, obj ) {
@@ -543,6 +530,90 @@ var app = (function() {
         return result;
     };
 
+    // helper function. finds the range of the y variable in the data
+    var findYrange = function( data, yvar ) {
+        var min = Infinity;
+        var max = -Infinity;
+        $.each( data, function( index, obj ) {
+            value = obj[ yvar ];
+            if( value < min ) {
+                min = value;
+            } else if( value > max ) {
+                max = value;
+            }
+        } );
+        return [ min, max ];
+    };
+
+    // helper function. creates the xvals object.
+    // the keys are the x variable names, the properties are
+    // arrays containing all values of that variable. e.g.
+    //  xvals = {
+    //      load:   [ 0, 1 ],
+    //      srr:    [ 1, 5, 10, 20 ],
+    //      temp:   [ 40, 60, 80, 100, 120, 140 ]
+    //  }
+    var createXvals = function( data ) {
+        var xvals = {};
+        $.each( data, function( index, item ) {
+            $.each( Object.keys( item ), function( i, key ) {
+                if( key === config.yvar ) return;
+                if( Object.keys( xvals ).indexOf( key ) < 0 ) {
+                    xvals[key] = [];
+                }
+                if( xvals[key].indexOf( item[key] ) < 0) {
+                    xvals[key].push( item[key] );
+                }
+            });
+        });
+        return xvals;
+    };
+
+    // helper function.
+    // create a "Plot ____" button for each x, and add it to the DOM.
+    var createXbuttons = function( gridObj ) {
+        var allXs = $.map( gridObj, function( value ) {
+            return value;
+        }).sort(); // sort it, otherwise the order of the buttons will change each click!
+
+        $.each( allXs, function( index, xname ) {
+            var isActive = '';
+            if( xname === gridObj.plot ) {
+                isActive = ' active';
+            }
+
+            if( xname !== undefined ) {
+                config.$buttons.append(
+                    $( '<label/>', {
+                        class: 'btn btn-primary' + isActive,
+                        id: 'label-' + xname
+                    } ).append(
+                        $( '<input/>', {
+                            type: 'radio',
+                            id: 'btn-' + xname,
+                            'data-xname': xname
+                        } )
+                    ).append( 'Plot ' + xname )
+                );
+            }
+        });
+    };
+
+    // helper function.
+    // allows sorting an object's keys by their (numeric) property value.
+    // used to sort the data in the chart tooltips
+    function dynamicSort( property ) {
+        var sortOrder = 1;
+        if ( property[ 0 ] === "-" ) {
+            sortOrder = -1;
+            property = property.substr( 1 );
+        }
+        return function ( a, b ) {
+            var result = ( a[ property ] < b[ property ] ) ? -1 : ( a[ property ] > b[ property ] ) ? 1 : 0;
+            return result * sortOrder;
+        };
+    }
+
     return {
         init: init
     };
@@ -550,5 +621,14 @@ var app = (function() {
 })();
 
 $(function() {
-    app.init();
+    qp.init();
 });
+
+// HOW TO USE THIS:
+// Pass options to qp.init. Defaults are for the quick example, probably should be overridden. Sorry for the bad names.
+//      qp.init({
+//          'filepath': '/path/to/data.json',       - data must be in JSON format.
+//          'yvar': 'pred',                         - the name of the prediction variable. probably always 'pred'.
+//          'seriesvar': 'blendid',                 - the name of the blend ID variable. so Highcharts knows which points should be connected into curves.
+//          'nonplots': [ 'other', 'vars' ]         - any variables that are in the JSON file and are NOT yvar, seriesvar, or any of the x's.
+//      })
