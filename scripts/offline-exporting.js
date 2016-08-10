@@ -364,4 +364,3 @@
 	}];
 
 }));
-window.console && console.log('--- Running modules/offline-exporting.src.js from GitHub, branch/commit/tag "master" ---');

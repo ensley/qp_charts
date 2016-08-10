@@ -2,8 +2,17 @@ var qp = ( function() {
 
     // default options
     var config = {
-        '$container' : $('#datatable'),
-        '$buttons' : $('#xbuttons'),
+        '$container' : $( '#datatable' ),
+        '$buttons' : $( '#xbuttons' ),
+        '$help' : $( '#help' ),
+        '$infoModal' : $( '#infoModal' ),
+        '$changeRange' : $( '#change-range' ),
+        '$resetRange' : $( '#reset-range' ),
+        '$ymin' : $( '#ymin' ),
+        '$ymax' : $( '#ymax' ),
+        '$export' : $( '#export' ),
+        '$swap' : $( '#swap' ),
+        '$legend' : $( '#legend' ),
         'filepath' : '/data/qlife_mtm.json',
         'yvar' : 'pred',
         'seriesvar' : 'blendid',
@@ -39,8 +48,8 @@ var qp = ( function() {
     // bind the modal (from bootstrap.js) to its button
     var setupHelpButton = function() {
 
-        $( '#help' ).click( function() {
-            $( '#infoModal' ).modal();
+        config.$help.click( function() {
+            config.$infoModal.modal();
         });
 
     };
@@ -63,17 +72,17 @@ var qp = ( function() {
     // set behavior of the "y axis" form
     var setupRange = function() {
 
-        $( '#change-range' ).unbind();
+        config.$changeRange.unbind();
         // when "Update" is clicked, redraw the charts
-        $( '#change-range' ).click( function() {
+        config.$changeRange.click( function() {
             chartArray = createHtmlTable( config.$container.data() );
         });
 
-        $( '#reset-range' ).unbind();
+        config.$resetRange.unbind();
         // when "Reset" is clicked, revert to the original range and redraw
-        $( '#reset-range' ).click( function() {
-            $( '#ymin' ).val( originalRange[0] );
-            $( '#ymax' ).val( originalRange[1] );
+        config.$resetRange.click( function() {
+            config.$ymin.val( originalRange[0] );
+            config.$ymax.val( originalRange[1] );
             chartArray = createHtmlTable( config.$container.data() );
         });
 
@@ -81,8 +90,8 @@ var qp = ( function() {
 
     // set export button behavior
     var setupExport = function() {
-        $( '#export' ).unbind();
-        $( '#export' ).click( function() {
+        config.$export.unbind();
+        config.$export.click( function() {
             Highcharts.exportCharts( chartArray );
         });
     };
@@ -110,8 +119,8 @@ var qp = ( function() {
             });
 
             // put the range into the form initially
-            $( '#ymin' ).val( originalRange[0] );
-            $( '#ymax' ).val( originalRange[1] );
+            config.$ymin.val( originalRange[0] );
+            config.$ymax.val( originalRange[1] );
 
             // this object gets passed around a lot.
             // indicates which x gets plotted and which goes on the rows/cols
@@ -179,8 +188,8 @@ var qp = ( function() {
         });
 
         // set up the swap button
-        $( '#swap' ).unbind();
-        $( '#swap' ).click( function() {
+        config.$swap.unbind();
+        config.$swap.click( function() {
             var newGridObj = {
                 'row': config.$container.data( 'col' ),
                 'col': config.$container.data( 'row' ),
@@ -333,8 +342,8 @@ var qp = ( function() {
         // build up the correct ID so Highcharts knows where to draw
         var plotId = 'plot-' + [ gridObj.row, row, gridObj.col, col ].join( '' );
         // get the y axis range from the form
-        var setMin = $( '#ymin' ).val();
-        var setMax = $( '#ymax' ).val();
+        var setMin = config.$ymin.val();
+        var setMax = config.$ymax.val();
 
         // this text goes in the title of the exported charts only
         var titleText = '';
@@ -479,9 +488,8 @@ var qp = ( function() {
         // draw the chart
         var c = new Highcharts.chart( options, function() {
             // on callback, add the seriesvar's to the legend if they aren't there already
-            var $legend = $( '#legend' );
             // each chart should have the exact same legend. so if there's something there, we can move on
-            if( $legend.html() !== '' ) return;
+            if( config.$legend.html() !== '' ) return;
 
             $.each( this.series, function( index, series ) {
                 var $legendEntry = $( '<div/>', { class: 'media' } );
@@ -501,7 +509,7 @@ var qp = ( function() {
                 $legendTextSpot.append( $newLegendDiv );
                 $legendEntry.append( $legendColorSpot );
                 $legendEntry.append( $legendTextSpot );
-                $legend.append( $legendEntry );
+                config.$legend.append( $legendEntry );
             } );
         } );
 
@@ -620,9 +628,7 @@ var qp = ( function() {
 
 })();
 
-$(function() {
-    qp.init();
-});
+
 
 // HOW TO USE THIS:
 // Pass options to qp.init. Defaults are for the quick example, probably should be overridden. Sorry for the bad names.

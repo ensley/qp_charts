@@ -211,7 +211,7 @@ extend(Chart.prototype, {
 			.replace(/ (NS[0-9]+\:)?href=/g, ' xlink:href=') // #3567
 			.replace(/\n/, ' ')
 			// Any HTML added to the container after the SVG (#894)
-			.replace(/<\/svg>.*?$/, '</svg>') 
+			.replace(/<\/svg>.*?$/, '</svg>')
 			// Batik doesn't support rgba fills and strokes (#3095)
 			.replace(/(fill|stroke)="rgba\(([ 0-9]+,[ 0-9]+,[ 0-9]+),([ 0-9\.]+)\)"/g, '$1="rgb($2)" $1-opacity="$3"')
 			/* This fails in IE < 8
@@ -263,7 +263,7 @@ extend(Chart.prototype, {
 			html,
 			options = merge(chart.options, additionalOptions), // copy the options and add extra options
 			allowHTML = options.exporting.allowHTML;
-			
+
 
 		// IE compatibility hack for generating SVG content that it doesn't really understand
 		if (!doc.createElementNS) {
@@ -360,7 +360,7 @@ extend(Chart.prototype, {
 				html = '<foreignObject x="0" y="0" width="200" height="200">' +
 					'<body xmlns="http://www.w3.org/1999/xhtml">' +
 					html[1] +
-					'</body>' + 
+					'</body>' +
 					'</foreignObject>';
 				svg = svg.replace('</svg>', html + '</svg>');
 			}
@@ -398,7 +398,7 @@ extend(Chart.prototype, {
 	 * @param {Object} chartOptions Additional chart options for the SVG representation of the chart
 	 */
 	exportChart: function (options, chartOptions) {
-		
+
 		var svg = this.getSVGForExport(options, chartOptions);
 
 		// merge the options
@@ -795,4 +795,3 @@ Chart.prototype.callbacks.push(function (chart) {
 
 
 }));
-window.console && console.log('--- Running modules/exporting.src.js from GitHub, branch/commit/tag "master" ---');
